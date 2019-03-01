@@ -6,14 +6,17 @@ class Curl {
 		self::$agent = $ua;
 	}
 	
-	public static function request($url, $gzip=false, $proxy='', $method='get', $fields = array(), $referer=''){
+	public static function request($url, $gzip=false, $cookie='', $proxy='', $method='get', $fields = array(), $referer=''){
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_HEADER, 0);
 		//curl_setopt($ch,CURLOPT_HTTPHEADER, array("Host: www.landchina.com" ,'Origin:http://www.landchina.com'));
 		curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (compatible; Baiduspider-render/2.0; +http://www.baidu.com/search/spider.html)');
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-		//curl_setopt($ch,CURLOPT_COOKIE,'ASP.NET_SessionId=nfcr1mdqwgg2msmkevuk2zaf; Hm_lvt_83853859c7247c5b03b527894622d3fa=1475997978; Hm_lpvt_83853859c7247c5b03b527894622d3fa=1476004958');
+		if ($cookie) {
+			curl_setopt($ch,CURLOPT_COOKIE,$cookie);
+		}
+		
 		if ($referer) {
 			curl_setopt ($ch,CURLOPT_REFERER, $referer);
 		}

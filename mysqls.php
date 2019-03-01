@@ -42,7 +42,7 @@ class Mysqlis{
 	}
 
 	public function insertContent($md5url, $tablename, $sql){
-		$query = "select * from ".$tablename." where md5url='".$md5url."'";
+		$query = "select * from ".$tablename." where url='".$md5url."'";
 		$query_res = $this->querys($query);
 		if (!$query_res) {
 			
