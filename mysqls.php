@@ -21,7 +21,12 @@ class Mysqlis{
 
 
 	public function insert($sql){		
-			return self::$conn->query($sql);		
+			$res = self::$conn->query($sql);
+			if($res){
+				return $this->querys('SELECT LAST_INSERT_ID() AS id');
+			}else{
+				return false;
+			}		
 	}
 
 	public function querys($sql){

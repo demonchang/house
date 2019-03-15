@@ -11,12 +11,13 @@ class Curl {
 		curl_setopt($ch, CURLOPT_HEADER, 0);
 		//curl_setopt($ch,CURLOPT_HTTPHEADER, array("Host: www.landchina.com" ,'Origin:http://www.landchina.com'));
 		curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (compatible; Baiduspider-render/2.0; +http://www.baidu.com/search/spider.html)');
+	
+		//curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Safari/537.36');
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 		if ($cookie) {
 			curl_setopt($ch,CURLOPT_COOKIE,$cookie);
 		}
-		
 		if ($referer) {
 			curl_setopt ($ch,CURLOPT_REFERER, $referer);
 		}
@@ -38,12 +39,7 @@ class Curl {
 		curl_close($ch);
 	}
 
-	function getProxys(){
 
-		$proxy_url = 'http://112.124.117.191/workerman/get_proxy.php?count=35';
-		$proxys = json_decode(self::request($proxy_url), true); //json2Array
-		return $proxys;
-	}
 
 	public static function getMultiRequest($url_arr,  $proxy=array(), $gzip=false){
 		if (!is_array($url_arr)) {

@@ -60,32 +60,50 @@ while($select_result = $sql_class->querys("select * from fangtianxia_url where s
 		
 
 
-		preg_match('#<div class="tt">(.*?)</div>[\s]*?<div class="font14">户型</div>#', $html_city, $out4);
+		preg_match('#<div class="tt">([\s\S]*?)</div>[\s]*?<div class="font14">户型</div>#', $html_city, $out4);
 		if(!isset($out4[1]) || empty($out4[1])){
 			$huxing = '';
 		}else{
 			$huxing = trim($out4[1]);
 		}
 
+
 		//var_dump($zongjia,$danjia);exit();
 
 		preg_match('#<div class="tt">(.*?)</div>[\s]*?<div class="font14">楼层(.*?)</div>#', $html_city, $out5);
 		if(!isset($out5[1]) || empty($out5[1])){
-			$louceng = '';
+			preg_match('#<div class="tt">(.*?)</div>[\s]*?<div class="font14">地上层数(.*?)</div>#', $html_city, $out35);
+			if(!isset($out35[1]) || empty($out35[1])){
+				$louceng = '';
+			}else{
+				$louceng = $out35[1].$out35[2];
+			}
 		}else{
 			$louceng = $out5[1].$out5[2];
 		}
 
 		preg_match('#<div class="tt">(.*?)</div>[\s]*?<div class="font14">朝向</div>#', $html_city, $out6);
 		if(!isset($out6[1]) || empty($out6[1])){
-			$chaoxiang = '';
+			preg_match('#<div class="tt">(.*?)</div>[\s]*?<div class="font14">进门朝向</div>#', $html_city, $out36);
+			if(!isset($out36[1]) || empty($out36[1])){
+				$chaoxiang = '';
+			}else{
+				$chaoxiang = $out36[1];
+			}
+		
 		}else{
 			$chaoxiang = $out6[1];
 		}
 
 		preg_match('#<div class="tt">(.*?)</div>[\s]*?<div class="font14">装修</div>#', $html_city, $out7);
 		if(!isset($out7[1]) || empty($out7[1])){
-			$zhuangxiu = '';
+			preg_match('#<div class="tt">(.*?)</div>[\s]*?<div class="font14">装修程度</div>#', $html_city, $out37);
+			if(!isset($out37[1]) || empty($out37[1])){
+				$zhuangxiu = '';
+			}else{
+				$zhuangxiu = $out37[1];
+			}
+			
 		}else{
 			$zhuangxiu = $out7[1];
 		}

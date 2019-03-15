@@ -11,8 +11,16 @@ while($select_result = $sql_class->querys("select * from lianjia_url_chengjiao w
 		// if($key == 10){
 		// 	exit();
 		// }
+		preg_match('#(.*?)chengjiao\/.*?#',$url,$out01);
+		if(!empty($out01)){
+			$base_url = $out01[1];
+		}else{
+			$base_url = '';
+		}
+
+
 		$html_city = $curl_class->request($url);
-		// file_put_contents('detail1.html',$html_city);exit();
+		//file_put_contents('detail1.html',$html_city);exit();
 		//$html_city = file_get_contents('detail1.html');
 
 		if(empty($html_city)){
@@ -108,10 +116,85 @@ while($select_result = $sql_class->querys("select * from lianjia_url_chengjiao w
 		if(!isset($out13[1]) || empty($out13[1])){
 			$jingjiren_lianjie = '';
 		}else{
-			$jingjiren_lianjie = 'https://hf.lianjia.com/chengjiao/display?hid='.$out13[1];
+			$jingjiren_lianjie = '';
+			if($base_url){
+				$api = $base_url.'chengjiao/display?hid='.$out13[1];
+				//var_dump($api);
+				$html_json= $curl_class->request($api);
+				$arr = json_decode($html_json,true);
+				//var_dump($arr);
+				$jingjiren_agent = $arr['data']['agentUcid'];
+				if($jingjiren_agent){
+					$jingjiren_lianjie = 'https://dianpu.lianjia.com/'.$jingjiren_agent;
+				}
+				
+			}
+			
+		}
+		//var_dump($jingjiren_lianjie);exit();
+		if($jingjiren_lianjie){
+			//var_dump($url);
+			//var_dump($jingjiren_lianjie);
+
+			$html_jingjiren= $curl_class->request($jingjiren_lianjie);
+			//file_put_contents('jingjiren.html',$html_jingjiren);exit();
+			preg_match('#<div class="agent-name clear-fl".*?><a.*?>(.*?)</a>(.*?)</span>#', $html_jingjiren, $out21);
+			if(!isset($out21[1]) || empty($out21[1])){
+				$jingjirenmingcheng = 0;
+			}else{
+				$jingjirenmingcheng = $out21[1];
+			}
+
+			preg_match('#联系电话:&nbsp;&nbsp;(.*?)</span>#', $html_jingjiren, $out22);
+			if(!isset($out22[1]) || empty($out22[1])){
+				$jingjirendianhua = 0;
+			}else{
+				$jingjirendianhua = $out22[1];
+			}
+
+
+			preg_match('#所属门店:&nbsp;<i id="icon_pin"></i></span><a data-coord="" id="mapShow"><span>(.*?)</span>#', $html_jingjiren, $out23);
+			if(!isset($out23[1]) || empty($out23[1])){
+				$jingjirensuoshu = 0;
+			}else{
+				$jingjirensuoshu = $out23[1];
+			}
+
+
+			preg_match('#入职年限:&nbsp;&nbsp;</span>(.*?)&nbsp;#', $html_jingjiren, $out24);
+			if(!isset($out24[1]) || empty($out24[1])){
+				$jingjirengongzuoshijian = 0;
+			}else{
+				$jingjirengongzuoshijian = $out24[1];
+			}
+
+
+			preg_match('#<div class="info_bottom">([\s\S]*?)<div class="comment_tab con-box">#', $html_jingjiren, $out25);
+			if(!isset($out25[1]) || empty($out25[1])){
+				$jingjirensum = 0;
+			}else{
+				$jingjirensum = trim(preg_replace('#&nbsp;#', '', preg_replace('#<[^<.]*?>#', '', $out25[1])));
+			}
+
+			preg_match('#<div class="num">综合评分：(.*?)</div>#', $html_jingjiren, $out26);
+			if(!isset($out26[1]) || empty($out26[1])){
+				$jingjirenpingfen = 0;
+			}else{
+				$jingjirenpingfen = trim(preg_replace('#&nbsp;#', '', preg_replace('#<[^<.]*?>#', '', $out26[1])));
+			}
+			
+
+		
+		}else{
+			$jingjirensum = '';
+			$jingjirenmingcheng = '';
+			$jingjirendianhua = '';
+			$jingjirenpingfen = '';
+			$jingjirensuoshu = '';
+			$jingjirengongzuoshijian = '';
 		}
 
-		preg_match('#<div class="name">基本属性</div>([\s\S]*?)<div class="transaction">#', $html_city, $out16);
+		preg_match('#<div class="name">基本属性</div>([\s\S]*?)<div class="disclaimer">#', $html_city, $out16);
 		if(!isset($out16[1]) || empty($out16[1])){
 			$jibenshuxing = '';
 		}else{
@@ -152,7 +235,7 @@ while($select_result = $sql_class->querys("select * from lianjia_url_chengjiao w
 
 		
 		
-		$content_field = "insert into lianjia_ershou_chengjiao(title,chengjiaoriqi,zongjia,danjia,guapaijia,chengjiaozhouqi,tiaojiacishu,daikancishu,guanzhushu,liulanshu,jingjiren_lianjie,jibenshuxing,jiaoyijilu,fangyuantese,parent_id) values('{$title}','{$chengjiaoriqi}','{$zongjia}','{$danjia}','{$guapaijia}','{$chengjiaozhouqi}','{$tiaojiacishu}','{$daikancishu}','{$guanzhushu}','{$liulanshu}','{$jingjiren_lianjie}','{$jibenshuxing}','{$jiaoyijilu}','{$fangyuantese}',{$value['id']})";
+		$content_field = "insert into lianjia_ershou_chengjiao(title,chengjiaoriqi,zongjia,danjia,guapaijia,chengjiaozhouqi,tiaojiacishu,daikancishu,guanzhushu,liulanshu,jingjiren_lianjie,jingjirenmingcheng,jingjirendianhua,jingjirenpingfen,jingjirensum,jingjirengongzuoshijian,jibenshuxing,jiaoyijilu,fangyuantese,parent_id) values('{$title}','{$chengjiaoriqi}','{$zongjia}','{$danjia}','{$guapaijia}','{$chengjiaozhouqi}','{$tiaojiacishu}','{$daikancishu}','{$guanzhushu}','{$liulanshu}','{$jingjiren_lianjie}','{$jingjirenmingcheng}','{$jingjirendianhua}','{$jingjirenpingfen}','{$jingjirensum}','{$jingjirengongzuoshijian}','{$jibenshuxing}','{$jiaoyijilu}','{$fangyuantese}',{$value['id']})";
 		//var_dump($content_field);exit();
 		$select_result = $sql_class->insert($content_field);
 		if($select_result){

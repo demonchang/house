@@ -2,7 +2,7 @@
 
 require_once(dirname(__FILE__).'./../common.php');
 
-
+$path = './lianjia_xiaoqu/';
 while($select_result = $sql_class->querys("select * from lianjia_url_xiaoqu where status=0 limit 100")){
 	//var_dump($select_result);exit();
 	foreach ($select_result as $key => $value) {
@@ -12,6 +12,7 @@ while($select_result = $sql_class->querys("select * from lianjia_url_xiaoqu wher
 		// 	exit();
 		// }
 		$html_city = $curl_class->request($url);
+		//file_put_contents($path.$value['id'].'.html',$html_city);
 		//file_put_contents('detail1.html',$html_city);exit();
 		//$html_city = file_get_contents('detail1.html');
 
