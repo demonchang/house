@@ -2,12 +2,15 @@
 
 require_once(dirname(__FILE__).'./../common.php');
 
+
+
+
 //select a.*,b.url from fangtianxia_ershou_xiaoqu as a left join fangtianxia_url_xiaoqu as b on a.parent_id = b.id limit 300
 while($select_result = $sql_class->querys("select * from fangtianxia_url_xiaoqu where status=0 limit 100")){
 	//var_dump($select_result);exit();
 	foreach ($select_result as $key => $value) {
 		$url = $value['url'];
-		//var_dump($url);
+		//var_dump($url);exit();
 		// if($key == 10){
 		// 	exit();
 		// }
@@ -198,6 +201,57 @@ while($select_result = $sql_class->querys("select * from fangtianxia_url_xiaoqu 
 		$select_result = $sql_class->insert($content_field);
 		if($select_result){
 			$status = 1; //正确
+			$jingjiren_base = $url;
+			//https://guomeidiyicheng.fang.com/house/ajaxrequest/getZhoubiangwData.php?newcode=1010035895&version=new&city=%E5%8C%97%E4%BA%AC&cityin=north&citysuo=bj
+			/*经纪人采集部分*/
+			preg_match('#newcode = "(.*?)"#', $html_city, $out110);
+			if(!isset($out110[1]) || empty($out110[1])){
+				$newcode = '';
+			}else{
+				$newcode =  trim(preg_replace('#<.*?>#', '', $out110[1]));
+			}
+
+			preg_match('#city = "(.*?)"#', $html_city, $out111);
+			if(!isset($out111[1]) || empty($out111[1])){
+				$city = '';
+			}else{
+				$city =  urlencode(trim(preg_replace('#<.*?>#', '', $out111[1])));
+			}
+
+			preg_match('#cityin = "(.*?)"#', $html_city, $out112);
+			if(!isset($out112[1]) || empty($out112[1])){
+				$cityin = '';
+			}else{
+				$cityin =  trim(preg_replace('#<.*?>#', '', $out112[1]));
+			}
+
+			preg_match('#citysuo = "(.*?)"#', $html_city, $out113);
+			if(!isset($out113[1]) || empty($out113[1])){
+				$citysuo = '';
+			}else{
+				$citysuo =  trim(preg_replace('#<.*?>#', '', $out113[1]));
+			}
+
+			$jingjiren_url = $jingjiren_base."house/ajaxrequest/getZhoubiangwData.php?newcode={$newcode}&version=new&city={$city}&cityin={$cityin}&citysuo={$citysuo}";
+			$jingjiren_citys = $curl_class->request($jingjiren_url,true);
+			//var_dump($jingjiren_citys);
+			//$jingjiren = file_get_contents('jingjiren.html');
+			$jingjiren_arr = json_decode($jingjiren_citys,true);
+			if(!empty($jingjiren_arr['data'])) {
+				preg_match_all('#href="(.*?)"#', $jingjiren_arr['data'], $jingjiren_href);
+				if(!empty($jingjiren_href)){
+					foreach ($jingjiren_href[1] as $kk=> $vv) {
+						$content_field = "insert into fangtianxia_url_jingjiren (url,parent_id) value('{$vv}',{$value['id']})";
+						//var_dump($content_field);exit();
+						$insert_field = $sql_class->insertContent($vv,'fangtianxia_url_jingjiren',$content_field);
+
+						
+					}
+				}
+			}
+
+			//var_dump($jingjiren_arr);exit();
+			
 			
 		}else{
 			$status = 4; //插入失败

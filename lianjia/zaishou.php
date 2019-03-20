@@ -2,7 +2,6 @@
 
 require_once(dirname(__FILE__).'./../common.php');
 
-
 while($select_result = $sql_class->querys("select * from lianjia_url where status=0 limit 100")){
 	//var_dump($select_result);exit();
 	foreach ($select_result as $key => $value) {
@@ -176,7 +175,7 @@ while($select_result = $sql_class->querys("select * from lianjia_url where statu
 			if(!isset($out25[1]) || empty($out25[1])){
 				$jingjirensum = 0;
 			}else{
-				$jingjirensum = trim(preg_replace('#&nbsp;#', '', preg_replace('#<[^<.]*?>#', '', $out25[1])));
+				$jingjirensum = trim(preg_replace('#&nbsp;#', '', preg_replace('#<[^<].*?>#', '', $out25[1])));
 			}
 
 		

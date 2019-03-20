@@ -9,7 +9,7 @@ $select_result = $sql_class->querys($content_field);
 foreach ($select_result as $key => $value) {
 	$base_url = $value['url'];
 	$base_url = str_replace("http://", "https://", $base_url);
-	if($base_url == 'https://bj.fang.com/'){
+	if($base_url === 'https://bj.fang.com/'){
 		$base_url = 'https://esf.fang.com';
 	}else{
 		$newtitle = substr($base_url,0,-9);
@@ -70,10 +70,11 @@ foreach ($select_result as $key => $value) {
 			//var_dump($out2);exit();
 
 			foreach ($out2[1] as $keys => $values) {
-				$content_url_field = "select * from fangtianxia_url where url='{$values}'";
+				$detialurl = $base_url.$values;
+
+				$content_url_field = "select * from fangtianxia_url where url='{$detialurl}'";
 				$select_result = $sql_class->querys($content_url_field);
 				//var_dump($select_result);exit();
-				$detialurl = $base_url.$values;
 				if(empty($select_result)){
 					$content_field = "insert into fangtianxia_url(url,parent_id) values('{$detialurl}',{$v['id']})";
 					//var_dump($content_field);exit();

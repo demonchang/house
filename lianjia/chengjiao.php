@@ -173,14 +173,14 @@ while($select_result = $sql_class->querys("select * from lianjia_url_chengjiao w
 			if(!isset($out25[1]) || empty($out25[1])){
 				$jingjirensum = 0;
 			}else{
-				$jingjirensum = trim(preg_replace('#&nbsp;#', '', preg_replace('#<[^<.]*?>#', '', $out25[1])));
+				$jingjirensum = trim(preg_replace('#&nbsp;#', '', preg_replace('#<[^<].*?>#', '', $out25[1])));
 			}
 
 			preg_match('#<div class="num">综合评分：(.*?)</div>#', $html_jingjiren, $out26);
 			if(!isset($out26[1]) || empty($out26[1])){
 				$jingjirenpingfen = 0;
 			}else{
-				$jingjirenpingfen = trim(preg_replace('#&nbsp;#', '', preg_replace('#<[^<.]*?>#', '', $out26[1])));
+				$jingjirenpingfen = trim(preg_replace('#&nbsp;#', '', preg_replace('#<[^<].*?>#', '', $out26[1])));
 			}
 			
 

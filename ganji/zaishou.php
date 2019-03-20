@@ -13,6 +13,7 @@ while($select_result = $sql_class->querys("select * from ganji_url where status=
 		// }
 		sleep(1);
 		$html_city = $curl_class->request($url);
+		//file_put_contents('detail.html',$html_city);exit();
 		//file_put_contents($path.$value['id'].'.html',$html_city);
 		//$html_city = file_get_contents('detail1.html');
 
@@ -36,7 +37,16 @@ while($select_result = $sql_class->querys("select * from ganji_url where status=
 		
 		$title = trim(preg_replace('#<.*?>#', '', $out0[1]));
 		
-		$sub = '';
+
+		preg_match('#<li class="date">(.*?)</li>#', $html_city, $out1);
+		if(!isset($out1[1]) || empty($out1[1])){
+			$sub = 0;
+		}else{
+			$sub = $out1[1];
+		}
+
+
+
 		
 
 		preg_match('#<span class="price">(.*?)</span>#', $html_city, $out2);
@@ -115,29 +125,97 @@ while($select_result = $sql_class->querys("select * from ganji_url where status=
 		}
 
 
-	
-		$kanfangshijian = '';
 		
 
-		preg_match('#<div class="name">([\s\S]*?)</div>#', $html_city, $out13);
+		preg_match('#<div class="name">[\s\S]*?href="(.*?)"[\s\S]*?</a>#', $html_city, $out13);
 		if(!isset($out13[1]) || empty($out13[1])){
 			$jingjiren = '';
 		}else{
-			$jingjiren = trim(preg_replace('#<.*?>#', '', $out13[1]));
+			$jingjiren = 'http:'.trim($out13[1]);
 		}
 
-		//<div class="evaluate">评分:5.0/<a href="https://dianpu.ganji.com/1000000020012870/?w=pingjia">52人评价</a>
 
-	
-		$jingjirenpingfen = '';
-		
 
-		//var_dump($jingjirenpingfen);exit();
+		if($jingjiren){
+			//var_dump($jingjiren);
+			//https://sh.esf.fang.com/chushou
+			$html_jingjiren = '';
+			$jingjirenmingcheng = '';
+			$count_jingjiren = 5;
+			sleep(1);
+			while ($count_jingjiren) {
+				$html_jingjiren_res= $curl_class->request($jingjiren);
+				
+				if($html_jingjiren_res){
+ 					$html_jingjiren = $html_jingjiren_res;
 
-		//<div class="phone" >4008807259<span>转</span>3922<div class="weapp-code"
+ 					preg_match('#<span class="name-text">(.*?)</span>#', $html_jingjiren, $out121);
+					if(!isset($out121[1]) || empty($out121[1])){
+						$jingjirenmingcheng = '';
+					}else{
+						$jingjirenmingcheng = trim($out121[1]);
+						break;
+					}
+					
+				}else{
+					sleep($count_jingjiren);
+				}
+				$count_jingjiren--;
+			}
+
+
+			
+			//file_put_contents('jingjiren.html',$html_jingjiren);exit();
+			//$html_jingjiren = file_get_contents('jingjiren.html');
+			
+
+			preg_match('#<a class="phone_num js_person_phone".*?>(.*?)</a>#', $html_city, $out122);
+			if(!isset($out122[1]) || empty($out122[1])){
+				$jingjirendianhua = '';
+			}else{
+				$jingjirendianhua = trim($out122[1]);
+			}
+
+
+			preg_match('#经纪公司：</span>(.*?)</p>#', $html_jingjiren, $out123);
+			if(!isset($out123[1]) || empty($out123[1])){
+				$jingjirensuoshu = '';
+			}else{
+				$jingjirensuoshu = trim($out123[1]);
+			}
+
+
+			
+			$jingjirengongzuoshijian = '';
+			
+
+
+			preg_match('#<div class="agent-info">([\s\S]*?)<div class="agent-business">#', $html_jingjiren, $out125);
+			if(!isset($out125[1]) || empty($out125[1])){
+				$jingjirensum = '';
+			}else{
+				$jingjirensum = trim(preg_replace('#-->#', '', preg_replace('#<[^<].*?>#', '', $out125[1])));
+			}
+
+
+			
+			$jingjirenpingfen = '';
+			
+
+			//var_dump($jingjirenpingfen,$jingjirensum,$jingjirensuoshu,$jingjirendianhua,$jingjirenmingcheng);exit();
+
 		
-		
-		$jingjirendianhua = '';
+		}else{
+			$jingjirensum = '';
+			$jingjirenmingcheng = '';
+			$jingjirendianhua = '';
+			$jingjirenpingfen = '';
+			$jingjirensuoshu = '';
+			$jingjirengongzuoshijian = '';
+		}
+
+		//var_dump($jingjiren);exit();
+
 		
 
 		preg_match('#房屋描述</h3>([\s\S]*?)<h3 class="g-title">业主心态#', $html_city, $out16);
@@ -164,23 +242,7 @@ while($select_result = $sql_class->querys("select * from ganji_url where status=
 			$fangyuantese =  trim(preg_replace('#<.*?>#', '', $out18[1]));
 		}
 
-		//30日带看<span>0</span>次
-		//var_dump($fangyuantese);exit();
-		
-			$daikancishu7 = '';
-		
 
-		
-			$daikancishu30 = '';
-		
-		
-		//var_dump($daikancishu7,$daikancishu30);exit();
-		// for ($i=0; $i < 20; $i++) { 
-		// 	$wrap = 'out'.$i;
-		// 	//var_dump($wrap);exit();
-		// 	var_dump(${$wrap}[1]);
-		// }
-		// exit();
 
 		/*小区信息采集*/
 		preg_match('#id="js-xiaoquinfo-mark">([\s\S]*?)<!--房贷计算器start-->#', $html_city, $out21);
@@ -298,7 +360,7 @@ while($select_result = $sql_class->querys("select * from ganji_url where status=
 
 		
 		
-		$content_field = "insert into ganji_ershou_zaishou(title,sub,zongjia,danjia,huxing,louceng,chaoxiang,zhuangxiu,mianji,leixing,xiaoqumingcheng,suozaiquyu,kanfangshijian,jingjiren,jingjirenpingfen,jingjirendianhua,jibenshuxing,jiaoyishuxing,fangyuantese,daikancishu7,daikancishu30,parent_id) values('{$title}','{$sub}','{$zongjia}','{$danjia}','{$huxing}','{$louceng}','{$chaoxiang}','{$zhuangxiu}','{$mianji}','{$leixing}','{$xiaoqumingcheng}','{$suozaiquyu}','{$kanfangshijian}','{$jingjiren}','{$jingjirenpingfen}','{$jingjirendianhua}','{$jibenshuxing}','{$jiaoyishuxing}','{$fangyuantese}','{$daikancishu7}','{$daikancishu30}',{$value['id']})";
+		$content_field = "insert into ganji_ershou_zaishou(title,sub,zongjia,danjia,huxing,louceng,chaoxiang,zhuangxiu,mianji,leixing,xiaoqumingcheng,suozaiquyu,jingjiren,jingjirenpingfen,jingjirendianhua,jingjirenmingcheng,jingjirensuoshu,jingjirengongzuoshijian,jingjirensum,jibenshuxing,jiaoyishuxing,fangyuantese,parent_id) values('{$title}','{$sub}','{$zongjia}','{$danjia}','{$huxing}','{$louceng}','{$chaoxiang}','{$zhuangxiu}','{$mianji}','{$leixing}','{$xiaoqumingcheng}','{$suozaiquyu}','{$jingjiren}','{$jingjirenpingfen}','{$jingjirendianhua}','{$jingjirenmingcheng}','{$jingjirensuoshu}','{$jingjirengongzuoshijian}','{$jingjirensum}','{$jibenshuxing}','{$jiaoyishuxing}','{$fangyuantese}',{$value['id']})";
 		//var_dump($content_field);exit();
 		$select_result = $sql_class->insert($content_field);
 		if($select_result){

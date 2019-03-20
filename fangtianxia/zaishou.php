@@ -2,7 +2,6 @@
 
 require_once(dirname(__FILE__).'./../common.php');
 
-
 while($select_result = $sql_class->querys("select * from fangtianxia_url where status=0 limit 100")){
 	//var_dump($select_result);exit();
 	foreach ($select_result as $key => $value) {
@@ -36,9 +35,11 @@ while($select_result = $sql_class->querys("select * from fangtianxia_url where s
 		$title = trim($out0[1]);
 		//var_dump($title);exit();
 
-		$sub = '';
+		
 		preg_match('#<div class="sub".*?>(.*?)</div>#', $html_city, $out1);
-		if(isset($out1[1]) || !empty($out1[1])){
+		if(!isset($out1[1]) || empty($out1[1])){
+			$sub = '';
+		}else{
 			$sub = $out1[1];
 		}
 		
@@ -148,21 +149,91 @@ while($select_result = $sql_class->querys("select * from fangtianxia_url where s
 		if(!isset($out13[1]) || empty($out13[1])){
 			$jingjiren = '';
 		}else{
-			$jingjiren = $out13[1].'#'.$out13[2];
+			$jingjiren = $out13[1];
+			if(!empty($jingjiren)){
+				preg_match('#(.*?)\/chushou.*?#',$url,$outjingjiren);
+
+				$jingjiren = $outjingjiren[1].$jingjiren;
+			}
 		}
-		//var_dump($jingjiren);exit();
-		//<div class="evaluate">评分:5.0/<a href="https://dianpu.fangtianxia.com/1000000020012870/?w=pingjia">52人评价</a>
 
-		// preg_match('#<div class="evaluate">评分:(.*?)</a>#', $html_city, $out14);
-		// if(!isset($out14[1]) || empty($out14[1])){
+		if($jingjiren){
+			//var_dump($jingjiren);
+			//https://sh.esf.fang.com/chushou
+
+			$html_jingjiren= $curl_class->request($jingjiren,true);
+			$html_jingjiren = mb_convert_encoding($html_jingjiren, "UTF-8", "GBK");
+			//file_put_contents('jingjiren.html',$html_jingjiren);exit();
+			//$html_jingjiren = file_get_contents('jingjiren.html');
+			preg_match('#<b id="agentname">(.*?)</b>#', $html_jingjiren, $out21);
+			if(!isset($out21[1]) || empty($out21[1])){
+				$jingjirenmingcheng = '';
+			}else{
+				$jingjirenmingcheng = trim($out21[1]);
+			}
+
+			preg_match('#联系电话：<b class="redword">(.*?)</b>#', $html_jingjiren, $out22);
+			if(!isset($out22[1]) || empty($out22[1])){
+				$jingjirendianhua = '';
+			}else{
+				$jingjirendianhua = trim($out22[1]);
+			}
+
+
+			preg_match('#公司名称：<span>(.*?)</span>#', $html_jingjiren, $out23);
+			if(!isset($out23[1]) || empty($out23[1])){
+				$jingjirensuoshu = '';
+			}else{
+				$jingjirensuoshu = trim($out23[1]);
+			}
+
+
+			preg_match('#工作时间：</dt>[\s]*?<dd>(.*?)</dd>#', $html_jingjiren, $out24);
+			if(!isset($out24[1]) || empty($out24[1])){
+				$jingjirengongzuoshijian = '';
+			}else{
+				$jingjirengongzuoshijian = trim($out24[1]);
+			}
+
+			//<input type="hidden" id="importantesfprojname" value="<span style='padding-right:10px;'>安华西里(19)</span><span style='padding-right:10px;'>安华里(4)</span><span style='padding-right:10px;'>安贞西里(2)</span>" />
+
+
+			preg_match('#经纪人信息 start-->([\s\S]*?)<!-- 经纪人信息 end-->#', $html_jingjiren, $out25);
+			if(!isset($out25[1]) || empty($out25[1])){
+				$jingjirensum = '';
+			}else{
+				preg_match('#<input type="hidden" id="importantesfprojname" value="(.*?)" />#', $html_jingjiren, $out226);
+				if(!isset($out226[1]) || empty($out226[1])){
+					$jingjirenpingfen_zhongdian = '';
+				}else{
+					$jingjirenpingfen_zhongdian =  $out226[1];
+				}
+
+				$out25[1] = preg_replace('#<span class="grayword" id="importantgrayword"></span>#', $jingjirenpingfen_zhongdian, $out25[1]);
+				$jingjirensum = trim(preg_replace('#-->#', '', preg_replace('#<[^<].*?>#', '', $out25[1])));
+			}
+
+			//var_dump($jingjirensum);exit();
+			preg_match('# <!-- 客户评价 start -->([\s\S]*?)<!-- 客户评价 end -->#', $html_jingjiren, $out26);
+			if(!isset($out26[1]) || empty($out26[1])){
+				$jingjirenpingfen = '';
+			}else{
+				$jingjirenpingfen = trim(preg_replace('#&nbsp;#', '', preg_replace('#<[^<].*?>#', '', $out26[1])));
+			}
+
+			//var_dump($jingjirenpingfen,$jingjirensum,$jingjirensuoshu,$jingjirendianhua,$jingjirenmingcheng);exit();
+
+		
+		}else{
+			$jingjirensum = '';
+			$jingjirenmingcheng = '';
+			$jingjirendianhua = '';
 			$jingjirenpingfen = '';
-		// }else{
-		// 	$jingjirenpingfen = $out14[1];
-		// }
+			$jingjirensuoshu = '';
+			$jingjirengongzuoshijian = '';
+		}
 
-		//var_dump($jingjirenpingfen);exit();
-
-		//<div class="phone" >4008807259<span>转</span>3922<div class="weapp-code"
+		
 		
 		preg_match('#<span class="floatl mr10" id="mobilecode">(.*?)</span>#', $html_city, $out15);
 		if(!isset($out15[1]) || empty($out15[1])){
@@ -178,59 +249,26 @@ while($select_result = $sql_class->querys("select * from fangtianxia_url where s
 		}else{
 			$jibenshuxing =  trim(preg_replace('#<.*?>#', '', $out16[1]));
 		}
-		//var_dump($jibenshuxing);exit();
 
-		// preg_match('#<div class="name">交易属性</div>([\s\S]*?)<div class="disclaimer"#', $html_city, $out17);
-		// if(!isset($out17[1]) || empty($out17[1])){
-		 	$jiaoyishuxing = '';
-		// }else{
-		 	/*$jiaoyishuxing =  trim(preg_replace('#<.*?>#', '', $out17[1]));*/
-		//}
-
-		//<div class="mscont">
-		//var_dump($jiaoyishuxing);exit();
 
 
 		preg_match('#<div class="mscont">([\s\S]*?)房源图片#', $html_city, $out18);
 		if(!isset($out18[1]) || empty($out18[1])){
 			$fangyuantese = '';
 		}else{
-			$fangyuantese =  trim(preg_replace('#<.*?>#', '', $out18[1]));
+			$fangyuantese =  trim(str_replace(' ', '',preg_replace('#<.*?>#', '', $out18[1])));
 		}
-		//var_dump($fangyuantese);exit();
-		//30日带看<span>0</span>次
-		//var_dump($fangyuantese);exit();
-		// preg_match('#近7天带看次数</div>[\s\S]*?<div class="count">(.*?)</div>#', $html_city, $out19);
-		// if(!isset($out19[1])){
-		 	$daikancishu7 = '';
-		// }else{
-		// 	$daikancishu7 = $out19[1];
-		// }
 
-		// preg_match('#30日带看<span>(.*?)</span>次#', $html_city, $out20);
-		// if(!isset($out20[1])){
-		 	$daikancishu30 = '';
-		// }else{
-		// 	$daikancishu30 = $out20[1];
-		// }
-		
-		//var_dump($daikancishu7,$daikancishu30);exit();
-		// for ($i=0; $i < 20; $i++) { 
-		// 	$wrap = 'out'.$i;
-		// 	//var_dump($wrap);exit();
-		// 	var_dump(${$wrap}[1]);
-		// }
-		// exit();
 
 
 		
 		
-		$content_field = "insert into fangtianxia_ershou_zaishou(title,sub,zongjia,danjia,huxing,louceng,chaoxiang,zhuangxiu,mianji,leixing,xiaoqumingcheng,suozaiquyu,kanfangshijian,jingjiren,jingjirenpingfen,jingjirendianhua,jibenshuxing,jiaoyishuxing,fangyuantese,daikancishu7,daikancishu30,parent_id) values('{$title}','{$sub}','{$zongjia}','{$danjia}','{$huxing}','{$louceng}','{$chaoxiang}','{$zhuangxiu}','{$mianji}','{$leixing}','{$xiaoqumingcheng}','{$suozaiquyu}','{$kanfangshijian}','{$jingjiren}','{$jingjirenpingfen}','{$jingjirendianhua}','{$jibenshuxing}','{$jiaoyishuxing}','{$fangyuantese}','{$daikancishu7}','{$daikancishu30}',{$value['id']})";
+		$content_field = "insert into fangtianxia_ershou_zaishou(title,sub,zongjia,danjia,huxing,louceng,chaoxiang,zhuangxiu,mianji,leixing,xiaoqumingcheng,suozaiquyu,kanfangshijian,jingjiren,jingjirenpingfen,jingjirendianhua,jingjirenmingcheng,jingjirensuoshu,jingjirengongzuoshijian,jingjirensum,jibenshuxing,fangyuantese,parent_id) values('{$title}','{$sub}','{$zongjia}','{$danjia}','{$huxing}','{$louceng}','{$chaoxiang}','{$zhuangxiu}','{$mianji}','{$leixing}','{$xiaoqumingcheng}','{$suozaiquyu}','{$kanfangshijian}','{$jingjiren}','{$jingjirenpingfen}','{$jingjirendianhua}','{$jingjirenmingcheng}','{$jingjirensuoshu}','{$jingjirengongzuoshijian}','{$jingjirensum}','{$jibenshuxing}','{$fangyuantese}',{$value['id']})";
 		//var_dump($content_field);exit();
 		$select_result = $sql_class->insert($content_field);
 		if($select_result){
 			$status = 1; //正确
-			
+
 		}else{
 			$status = 4; //插入失败
 			file_put_contents('fangtianxia_sql.log',$content_field.PHP_EOL,FILE_APPEND);

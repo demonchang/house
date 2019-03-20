@@ -182,7 +182,7 @@ while($select_result = $sql_class->querys("select * from wuba_url where status=0
 			}
 
 
-			preg_match('#<!-- 经纪人业务简介start -->([\s\S]*?)<!-- 经纪人业务简介end -->#', $html_jingjiren, $out25);
+			preg_match('# <ul class="agent-biz-info-list">([\s\S]*?)<div class="agent-list" id="gent-list">#', $html_jingjiren, $out25);
 			if(!isset($out25[1]) || empty($out25[1])){
 				$jingjirensum = '';
 			}else{
