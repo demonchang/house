@@ -25,7 +25,7 @@ while($select_result = $sql_class->querys("select * from ganji_url_zufang where 
 			continue;
 		}
 
-		preg_match('#<!--房源标题start-->[\s\S]*?<i>([\s\S]*?)</i>[\s\S]*?<!--房源标题end-->#', $html_city, $out0);
+		preg_match('#<!--房源标题start-->[\s\S]*?<i>([\s\S]*?)<!--房源标题end-->#', $html_city, $out0);
 
 		if(empty($out0)){
 			file_put_contents('ganji_detail.log',$url.PHP_EOL,FILE_APPEND);
@@ -35,10 +35,12 @@ while($select_result = $sql_class->querys("select * from ganji_url_zufang where 
 			$sql_class->update($content_fieldss);
 			continue;
 		}
+
+		$out0[1] = preg_replace('#<span class="title-icon card-title-anxuan">#','(安选验真)',$out0[1]);
 		
 		$title = trim(preg_replace('#<.*?>#', '', $out0[1]));
 		
-
+		//var_dump($title);exit();
 		preg_match('#<li class="date">(.*?)</li>#', $html_city, $out1);
 		if(!isset($out1[1]) || empty($out1[1])){
 			$sub = 0;
@@ -99,6 +101,13 @@ while($select_result = $sql_class->querys("select * from ganji_url_zufang where 
 		}
 		//var_dump($leixing);exit();
 
+		preg_match('#<span class="t">地<i class="space"></i>铁：</span>[\s\S]*?class="content.*?">(.*?)</span>#', $html_city, $out29);
+		if(!isset($out29[1]) || empty($out29[1])){
+			$ditie = '';
+		}else{
+			$ditie = $out29[1];
+		}
+
 
 		preg_match('#小区名称：[\s\S]*?<span class="content.*?">([\s\S]*?)</span>#', $html_city, $out10);
 		if(!isset($out10[1]) || empty($out10[1])){
@@ -106,6 +115,8 @@ while($select_result = $sql_class->querys("select * from ganji_url_zufang where 
 		}else{
 			$xiaoqumingcheng = trim(preg_replace('#<.*?>#', '', $out10[1]));
 		}
+
+
 
 		preg_match('#所在地址：[\s\S]*?<span class="content.*?">([\s\S]*?)</span>#', $html_city, $out11);
 		if(!isset($out11[1]) || empty($out11[1])){
@@ -136,20 +147,18 @@ while($select_result = $sql_class->querys("select * from ganji_url_zufang where 
 			while ($count_jingjiren) {
 				$html_jingjiren_res= $curl_class->request($jingjiren);
 				
-				if($html_jingjiren_res){
- 					$html_jingjiren = $html_jingjiren_res;
+				
+				$html_jingjiren = $html_jingjiren_res;
 
- 					preg_match('#<span class="name-text">(.*?)</span>#', $html_jingjiren, $out121);
-					if(!isset($out121[1]) || empty($out121[1])){
-						$jingjirenmingcheng = '';
-					}else{
-						$jingjirenmingcheng = trim($out121[1]);
-						break;
-					}
-					
-				}else{
+				preg_match('#<span class="name-text">(.*?)</span>#', $html_jingjiren, $out121);
+				if(!isset($out121[1]) || empty($out121[1])){
+					$jingjirenmingcheng = '';
 					sleep($count_jingjiren);
+				}else{
+					$jingjirenmingcheng = trim($out121[1]);
+					break;
 				}
+					
 				$count_jingjiren--;
 			}
 
@@ -232,7 +241,7 @@ while($select_result = $sql_class->querys("select * from ganji_url_zufang where 
 
 		
 		
-		$content_field = "insert into ganji_ershou_zufang(title,sub,danjia,huxing,louceng,chaoxiang,zhuangxiu,mianji,leixing,xiaoqumingcheng,suozaiquyu,jingjiren,jingjirenpingfen,jingjirendianhua,jingjirenmingcheng,jingjirensuoshu,jingjirengongzuoshijian,jingjirensum,jibenshuxing,jiaoyishuxing,parent_id) values('{$title}','{$sub}','{$danjia}','{$huxing}','{$louceng}','{$chaoxiang}','{$zhuangxiu}','{$mianji}','{$leixing}','{$xiaoqumingcheng}','{$suozaiquyu}','{$jingjiren}','{$jingjirenpingfen}','{$jingjirendianhua}','{$jingjirenmingcheng}','{$jingjirensuoshu}','{$jingjirengongzuoshijian}','{$jingjirensum}','{$jibenshuxing}','{$jiaoyishuxing}',{$value['id']})";
+		$content_field = "insert into ganji_ershou_zufang(title,sub,danjia,huxing,louceng,chaoxiang,zhuangxiu,mianji,leixing,ditie,xiaoqumingcheng,suozaiquyu,jingjiren,jingjirenpingfen,jingjirendianhua,jingjirenmingcheng,jingjirensuoshu,jingjirengongzuoshijian,jingjirensum,jibenshuxing,jiaoyishuxing,parent_id) values('{$title}','{$sub}','{$danjia}','{$huxing}','{$louceng}','{$chaoxiang}','{$zhuangxiu}','{$mianji}','{$leixing}','{$ditie}','{$xiaoqumingcheng}','{$suozaiquyu}','{$jingjiren}','{$jingjirenpingfen}','{$jingjirendianhua}','{$jingjirenmingcheng}','{$jingjirensuoshu}','{$jingjirengongzuoshijian}','{$jingjirensum}','{$jibenshuxing}','{$jiaoyishuxing}',{$value['id']})";
 		//var_dump($content_field);exit();
 		$select_result = $sql_class->insert($content_field);
 		if($select_result){

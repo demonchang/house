@@ -7,7 +7,7 @@ return array(
 		'username' => 'root',
 		'password' => '123456',
 		'charset' => 'utf8',
-		'dbname' => 'ganji'
+		'dbname' => 'ziroom'
 		)
 	);
 ?>
